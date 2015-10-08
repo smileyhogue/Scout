@@ -1,0 +1,8 @@
+// @author Tristen Hogue
+// @since 10/8/15
+
+extends layout
+block content
+    h1= message
+    h2= error.status
+    pre #{error.stack}

@@ -1,0 +1,114 @@
+{
+  "locations": {
+    "Airplane": {
+      "roles": [
+        "Airline Attendant",
+        "Air Marshall",
+        "Co-pilot",
+        "Flight Instructor",
+        "Passenger",
+        "Pilot",
+        "Terrorist"
+      ]
+    },
+    "Bank": {
+      "roles": [
+        "Accountant",
+        "Armored Truck Driver",
+        "Customer",
+        "Manager",
+        "Notary",
+        "Security Guard",
+        "Teller"
+      ]
+    },
+    "Concert": {
+      "roles": [
+        "Audio Technician",
+        "Drummer",
+        "Fan",
+        "Guitarist",
+        "Groupie",
+        "Security",
+        "Singer"
+      ]
+    },
+    "Grocery Store": {
+      "roles": [
+        "Bag Boy",
+        "Baker",
+        "Butcher",
+        "Cashier",
+        "Customer",
+        "Pharmacist",
+        "Stock Clerk"
+      ]
+    },
+    "Military Base": {
+      "roles": [
+        "Chef",
+        "Colonel",
+        "Engineer",
+        "Medic",
+        "Pilot",
+        "Refugee",
+        "Soldier"
+      ]
+    },
+    "Movie Theater": {
+      "roles": [
+        "Booth Crew Member",
+        "Concessionist",
+        "Celebrity",
+        "Critic",
+        "Usher",
+        "Ticket Vendor",
+        "Viewer"
+      ]
+    },
+    "Restaurant": {
+      "roles": [
+        "Bartender",
+        "Cook",
+        "Dishwasher",
+        "Host/Hostess",
+        "Food Runner",
+        "Manager",
+        "Server"
+      ]
+    },
+    "Stadium": {
+      "roles": [
+        "Coach",
+        "Cheerleader",
+        "Fans",
+        "Food Vendor",
+        "Player",
+        "Security Guard",
+        "Ticket Vendor"
+      ]
+    },
+    "Television Set": {
+      "roles": [
+        "Audience Member",
+        "Boom Operator",
+        "Cameraman",
+        "Cast Member",
+        "Clapperboard Operator",
+        "Director",
+        "Stuntman"
+      ]
+    },
+    "University": {
+      "roles": [
+        "Adviser",
+        "Campus Security",
+        "Janitor",
+        "Parent",
+        "Professor",
+        "Student",
+        "Traffic Coordinator"
+      ]
+    }
+  }
+}

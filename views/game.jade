@@ -1,0 +1,9 @@
+// @author Tyler Sedlar
+// @since 10/8/15
+
+extend layout
+block header-info
+    h4 #{player_name}
+block content
+    each player_name in player_names
+        h2 #{player_name}

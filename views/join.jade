@@ -1,0 +1,19 @@
+// @author Tristen Hogue
+// @since 10/8/15
+
+extend layout
+block content
+    form(name="Join game", method="post" class="col-md-12")
+        div.input#form-group
+            span.label Game ID
+            input(class="form-control" type="text", name="id", id="id" value="Game ID")
+            div.input
+            span.label Player Name
+            input(class="form-control" type="text", name="playerName", id="PlayerName"
+            value="Player Name")
+            br
+            br
+        div.actions
+            input(class="col-md-5 button-cust btn-cust" type="submit", value="Join")
+            input(class="col-md-5 button-cust btn-cust" type="button"
+            onclick="location.href='/';" value="Back")
