@@ -37,6 +37,8 @@ module.exports = {
 	purge: function(gameDB, playerDB, gameID, callback) {
 		gameDB.remove({id: gameID}, function(gameErr, numGamesRemoved) {
 			playerDB.remove({game_id: gameID}, function(playerErr, numPlayersRemoved) {
+				gameDB.persistence.compactDatafile();
+				playerDB.persistence.compactDatafile();
 				callback();
 			});
 		});
