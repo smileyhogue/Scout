@@ -1,0 +1,31 @@
+// @author Tristen Hogue
+// @since 10/8/15
+
+doctype
+html
+    head
+        title #{title} - #{page}
+        link(rel='stylesheet', href='/stylesheets/style.css')
+        <!-- Mobile first -->
+        meta(name="viewport" content="width=device-width, initial-scale=1")
+        <!-- disable mobile zoom -->
+        meta(name="viewport" content="width=device-width, initial-scale=1, " +
+        "maximum-scale=1, user-scalable=no")
+        link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/" +
+        "3.3.5/css/bootstrap.min.css")
+        <!-- Optional theme -->
+        link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/" +
+        "3.3.5/css/bootstrap-theme.min.css")
+        <!-- Latest compiled and minified JavaScript -->
+        script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js")
+    body
+        header
+            h1 #{title}
+            h4 #{page}
+            block header-info
+        .container
+            .full-container
+                block content
+        footer
+            input(class="col-md-3 button-primary" type="button"
+            onclick="location.href='https://github.com';" value="GitHub")

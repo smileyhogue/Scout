@@ -204,3 +204,17 @@ footer {
     padding: 5px;
     font-size: 13px;
 }
+
+.full-container {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
+p.player-name {
+    border-style: solid;
+    border-width: medium;
+    border-color: red;
+    text-align: center;
+}
