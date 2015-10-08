@@ -24,5 +24,21 @@ module.exports = {
 					callback(gameID, location, roles);
 				}
 			});
+	},
+
+	/**
+	 * Removes a game and all players that match the given gameID
+	 *
+	 * @param gameDB the database of games
+	 * @param playerDB the database of players
+	 * @param gameID the id of the game to remove
+	 * @param callback a callback upon removing the given game and its players
+	 */
+	purge: function(gameDB, playerDB, gameID, callback) {
+		gameDB.remove({id: gameID}, function(gameErr, numGamesRemoved) {
+			playerDB.remove({game_id: gameID}, function(playerErr, numPlayersRemoved) {
+				callback();
+			});
+		});
 	}
 };
