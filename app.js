@@ -5,10 +5,10 @@
 
 var fs = require("fs");
 var Datastore = require("nedb");
-var Parameters = require("./js/Parameters.js");
-var DatabaseTool = require("./js/DatabaseTool.js");
-var Games = require("./js/Games.js");
-var Players = require("./js/Players.js");
+var Parameters = require("./public/js/Parameters.js");
+var DatabaseTool = require("./public/js/DatabaseTool.js");
+var Games = require("./public/js/Games.js");
+var Players = require("./public/js/Players.js");
 
 var json = JSON.parse(fs.readFileSync("./res/locations.json", "UTF8"));
 var locations = json["locations"];
@@ -64,12 +64,12 @@ app.get("/create", function (request, response) {
 });
 
 app.post("/create-game", function (request, response) {
-	DatabaseTool.createEntryID(games, {}, function (id) {
-		var parameters;
-		request.on("data", function (args) {
-			parameters = Parameters.fromString(args);
-		});
-		request.on("end", function () {
+	var parameters;
+	request.on("data", function (args) {
+		parameters = Parameters.fromString(args);
+	});
+	request.on("end", function () {
+		DatabaseTool.createEntryID(games, {active: false}, function (id) {
 			DatabaseTool.createEntryID(players, {
 					"game_id": id,
 					"name": parameters["playerName"]
@@ -81,9 +81,7 @@ app.post("/create-game", function (request, response) {
 	});
 });
 
-app.get("/game", function (request, response) {
-	var gameID = request.query.game_id;
-	var playerID = request.query.player_id;
+function loadPlayers(gameID, playerID, response, active) {
 	players.find({game_id: gameID}, function (err, doc) {
 		var playerName;
 		var nameArray = [];
@@ -95,9 +93,49 @@ app.get("/game", function (request, response) {
 			}
 			nameArray.push(name);
 		}
-		response.render("game", {
-			title: "Scout", page: "Game - " + gameID, game_id: gameID,
-			player_id: playerID, player_name: playerName, player_names: nameArray
+		if (playerID != -1) {
+			response.render("game", {
+				title: "Scout", page: "Game - " + gameID, game_id: gameID,
+				player_id: playerID, player_name: playerName, player_names: nameArray,
+				active: false
+			});
+		} else {
+			response.render("render-game", {
+				title: "Scout", page: "Game - " + gameID, game_id: gameID,
+				player_names: nameArray, active: active
+			});
+		}
+	});
+}
+
+app.get("/game", function (request, response) {
+	var gameID = request.query.game_id;
+	var playerID = request.query.player_id;
+	loadPlayers(gameID, playerID, response, false);
+});
+
+app.get("/render-game", function (request, response) {
+	var gameID = request.query.game_id;
+	games.findOne({id: gameID}, function(err, doc) {
+		var active = doc["active"];
+		loadPlayers(gameID, -1, response, active);
+	});
+});
+
+app.post("/start-game", function (request, response) {
+	var parameters;
+	request.on("data", function (args) {
+		parameters = Parameters.fromString(args);
+	});
+	request.on("end", function () {
+		var gameID = parameters["game_id"];
+		games.update({id: gameID}, {active: true}, {}, function() {
+			games.persistence.compactDatafile();
+			Games.randomize(games, locations, gameID, function(location, roles) {
+				Players.selectRoles(players, gameID, roles, function(id, roles) {
+
+				});
+			});
 		});
 	});
 });

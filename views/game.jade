@@ -5,11 +5,22 @@ extend full-layout
 block header-info
     h4 #{player_name}
 block content
-    each player_name in player_names
-        p.player-name #{player_name}
-    form(name="Join game", method="post" class="row")
-        div.actions
-            div.col-xs-6
-                input(class="col-xs-12 btn-cust-green btn-lg" type="submit", value="Start")
-            div.col-xs-6
-                input(class="col-xs-12 btn-cust btn-lg" type="button" onclick="location.href='/';" value="Exit")
+    div(id="game")
+    | <script>
+    include ../public/js/Internet.js
+    | </script>
+    | <script>
+    include ../public/js/jQuery.js
+    | </script>
+    script(type="text/javascript").
+        var gameID = getParameter("game_id");
+        var playerID = getParameter("player_id");
+
+        function renderGame() {
+            $("#game").load("/render-game?game_id=" + gameID)
+        }
+
+        $(document).ready(function () {
+            renderGame();
+            setInterval(renderGame, 5000);
+        });

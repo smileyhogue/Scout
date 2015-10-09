@@ -12,7 +12,7 @@ module.exports = {
 	 * @returns {String|Ident|string|void|*|XML} a cleaned up post argument string
 	 */
 	cleanString: function(string) {
-		return string.replace("+", " ");
+		return string.replace(/\+/g, " ");
 	},
 
 	/**
