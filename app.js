@@ -40,10 +40,45 @@ app.get("/join", function (request, response) {
 	)
 });
 
+app.post("/join-game", function (request, response) {
+	var parameters;
+	request.on("data", function (args) {
+		parameters = Parameters.fromString(args);
+	});
+	request.on("end", function () {
+		var gameID = parameters["gameID"];
+		DatabaseTool.createEntryID(players, {
+				"game_id": gameID,
+				"name": parameters["playerName"]
+			},
+			function (playerId) {
+				response.redirect("/game?game_id=" + gameID + "&player_id=" + playerId);
+			});
+	});
+});
+
 app.get("/create", function (request, response) {
 	response.render("create",
 		{title: "Scout", page: "create a game"}
 	)
+});
+
+app.post("/create-game", function (request, response) {
+	DatabaseTool.createEntryID(games, {}, function (id) {
+		var parameters;
+		request.on("data", function (args) {
+			parameters = Parameters.fromString(args);
+		});
+		request.on("end", function () {
+			DatabaseTool.createEntryID(players, {
+					"game_id": id,
+					"name": parameters["playerName"]
+				},
+				function (playerId) {
+					response.redirect("/game?game_id=" + id + "&player_id=" + playerId);
+				});
+		});
+	});
 });
 
 app.get("/game", function (request, response) {
@@ -63,24 +98,6 @@ app.get("/game", function (request, response) {
 		response.render("game", {
 			title: "Scout", page: "Game - " + gameID, game_id: gameID,
 			player_id: playerID, player_name: playerName, player_names: nameArray
-		});
-	});
-});
-
-app.post("/create-game", function (request, response) {
-	DatabaseTool.createEntryID(games, {}, function (id) {
-		var parameters;
-		request.on("data", function (args) {
-			parameters = Parameters.fromString(args);
-		});
-		request.on("end", function () {
-			DatabaseTool.createEntryID(players, {
-					"game_id": id,
-					"name": parameters["playerName"]
-				},
-				function (playerId) {
-					response.redirect("/game?game_id=" + id + "&player_id=" + playerId);
-				});
 		});
 	});
 });
