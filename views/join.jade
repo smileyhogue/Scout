@@ -3,7 +3,7 @@
 
 extend layout
 block content
-    form(name="Join game", method="post" class="col-md-12")
+    form(name="Join game", method="post" class="row")
         div.input#form-group
             span.label Game ID
             input(class="form-control" type="text", name="id", id="id" value="Game ID")
@@ -14,6 +14,7 @@ block content
             br
             br
         div.actions
-            input(class="col-md-5 button-cust btn-cust" type="submit", value="Join")
-            input(class="col-md-5 button-cust btn-cust" type="button"
-            onclick="location.href='/';" value="Back")
+            div.col-xs-6
+                input(class="col-xs-12 btn-cust btn-lg" type="submit", value="Start")
+            div.col-xs-6
+                input(class="col-xs-12 btn-cust btn-lg" type="button" onclick="location.href='/';" value="Back")
