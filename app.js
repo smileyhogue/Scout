@@ -166,25 +166,53 @@ app.post("/start-game", function (request, response) {
 	});
 });
 
-app.post("/end-game", function(request, response) {
+app.post("/end-game", function (request, response) {
 	request.on("data", function (args) {
 		var parameters = Parameters.fromString(args);
 		var gameID = parameters["game_id"];
-		Games.purge(games, players, gameID, function() {
-			response.write(JSON.stringify({"Success": true}));
+		Games.purge(games, players, gameID, function () {
+			response.write(JSON.stringify({"success": true}));
 			response.end();
 		});
 	});
 });
 
-app.post("/check-game", function(request, response) {
+app.post("/check-game", function (request, response) {
 	request.on("data", function (args) {
 		var parameters = Parameters.fromString(args);
 		var gameID = parameters["game_id"];
-		games.findOne({id: gameID}, function(err, doc) {
+		games.findOne({id: gameID}, function (err, doc) {
 			var exists = (doc !== null);
-			response.write(JSON.stringify({"exists": exists}));
+			var active = (doc !== null && doc["active"]);
+			response.write(JSON.stringify({"exists": exists, "active": active}));
 			response.end();
+		});
+	});
+});
+
+app.post("/restart-game", function (request, response) {
+	request.on("data", function (args) {
+		var parameters = Parameters.fromString(args);
+		var gameID = parameters["game_id"];
+		games.update({id: gameID}, {id: gameID, active: false}, {}, function (err, doc) {
+			games.persistence.compactDatafile();
+			players.find({game_id: gameID}, function (err, doc) {
+				var total = doc.length;
+				var completed = 0;
+				for (var x in doc) {
+					var player = doc[x];
+					var id = player["id"];
+					var name = player["name"];
+					players.update({id: id}, {id: id, game_id: gameID, name: name}, {},
+						function (err, doc) {
+							completed++;
+							if (completed >= total) {
+								response.write(JSON.stringify({"success": true}));
+								response.end();
+							}
+						});
+				}
+			});
 		});
 	});
 });

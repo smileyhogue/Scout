@@ -35,8 +35,9 @@ block content
         }
 
         function restartGame() {
-            alert("Restart game");
-            $("p.player-name").css("border-color", "#4FC3F7");
+            $.post("/restart-game", {"game_id": gameID}, function(data) {
+                window.location.reload();
+            }, "JSON");
         }
 
         function renderGame() {
@@ -72,9 +73,16 @@ block content
                         endGameStateCycle();
                         alert("The game has ended.");
                         window.location = "/";
+                    } else {
+                        if (!data.active) {
+                            var firstElement = $("*[name='firstPlayerIndex']");
+                            if (firstElement.length) {
+                                window.location.reload();
+                            }
+                        }
                     }
                 }, "JSON");
-            }, 2500);
+            }, 1000);
         }
 
         function endGameStateCycle() {
