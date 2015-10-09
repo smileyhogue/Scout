@@ -41,9 +41,8 @@ app.get("/join", function (request, response) {
 });
 
 app.post("/join-game", function (request, response) {
-	var parameters;
 	request.on("data", function (args) {
-		parameters = Parameters.fromString(args);
+		var parameters = Parameters.fromString(args);
 		var gameID = parameters["gameID"];
 		DatabaseTool.createEntryID(players, {
 				"game_id": gameID,
@@ -62,9 +61,8 @@ app.get("/create", function (request, response) {
 });
 
 app.post("/create-game", function (request, response) {
-	var parameters;
 	request.on("data", function (args) {
-		parameters = Parameters.fromString(args);
+		var parameters = Parameters.fromString(args);
 		DatabaseTool.createEntryID(games, {active: false, first: -1}, function (id) {
 			DatabaseTool.createEntryID(players, {
 					"game_id": id,
@@ -142,9 +140,8 @@ app.get("/render-game-role", function (request, response) {
 });
 
 app.post("/start-game", function (request, response) {
-	var parameters;
 	request.on("data", function (args) {
-		parameters = Parameters.fromString(args);
+		var parameters = Parameters.fromString(args);
 		var gameID = parameters["game_id"];
 		games.findOne({id: gameID}, function (err, doc) {
 			var active = (doc !== null && doc["active"]);
@@ -163,6 +160,17 @@ app.post("/start-game", function (request, response) {
 						});
 				});
 			}
+		});
+	});
+});
+
+app.post("/end-game", function(request, response) {
+	request.on("data", function (args) {
+		var parameters = Parameters.fromString(args);
+		var gameID = parameters["game_id"];
+		Games.purge(games, players, gameID, function() {
+			response.write(JSON.stringify({"Success": true}));
+			response.end();
 		});
 	});
 });
