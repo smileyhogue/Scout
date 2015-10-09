@@ -1,17 +1,17 @@
 // @author Tristen Hogue
 // @since 10/8/15
 
-extend layout
+extend full-layout
 block content
     form(name="Join game", method="post", action="/join-game", class="row")
         div.input#form-group
             span.label Game ID
             input(class="form-control", type="text", name="gameID", id="gameID",
-            value="Game ID")
+            placeholder="Game ID")
             div.input
             span.label Player Name
             input(class="form-control" type="text", name="playerName", id="PlayerName",
-            value="Player Name")
+            placeholder="Player Name")
             br
             br
         div.actions

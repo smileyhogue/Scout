@@ -36,6 +36,8 @@ block content
 
         function restartGame() {
             $.post("/restart-game", {"game_id": gameID}, function(data) {
+                endGameCycle();
+                endGameStateCycle();
                 window.location.reload();
             }, "JSON");
         }
@@ -77,6 +79,8 @@ block content
                         if (!data.active) {
                             var firstElement = $("*[name='firstPlayerIndex']");
                             if (firstElement.length) {
+                                endGameCycle();
+                                endGameStateCycle();
                                 window.location.reload();
                             }
                         }
