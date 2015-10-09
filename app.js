@@ -120,22 +120,24 @@ app.get("/render-game-role", function (request, response) {
 	var gameID = request.query.game_id;
 	var playerID = request.query.player_id;
 	games.findOne({id: gameID}, function (err, doc) {
-		var location = doc["location"];
-		var first = doc["first"];
-		players.find({game_id: gameID}, function(err, doc) {
-			var nameArray = [];
-			for (var x in doc) {
-				nameArray.push(doc[x]["name"]);
-			}
-			nameArray.sort();
-			var firstName = nameArray[first];
-			players.findOne({id: playerID}, function (err, doc) {
-				var role = doc["role"];
-				response.render("render-game-role", {
-					location: location, role: role, first: first, firstName: firstName
+		if (doc !== null) {
+			var location = doc["location"];
+			var first = doc["first"];
+			players.find({game_id: gameID}, function (err, doc) {
+				var nameArray = [];
+				for (var x in doc) {
+					nameArray.push(doc[x]["name"]);
+				}
+				nameArray.sort();
+				var firstName = nameArray[first];
+				players.findOne({id: playerID}, function (err, doc) {
+					var role = doc["role"];
+					response.render("render-game-role", {
+						location: location, role: role, first: first, firstName: firstName
+					});
 				});
 			});
-		});
+		}
 	});
 });
 
@@ -170,6 +172,18 @@ app.post("/end-game", function(request, response) {
 		var gameID = parameters["game_id"];
 		Games.purge(games, players, gameID, function() {
 			response.write(JSON.stringify({"Success": true}));
+			response.end();
+		});
+	});
+});
+
+app.post("/check-game", function(request, response) {
+	request.on("data", function (args) {
+		var parameters = Parameters.fromString(args);
+		var gameID = parameters["game_id"];
+		games.findOne({id: gameID}, function(err, doc) {
+			var exists = (doc !== null);
+			response.write(JSON.stringify({"exists": exists}));
 			response.end();
 		});
 	});

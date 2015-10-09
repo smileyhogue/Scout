@@ -18,6 +18,7 @@ block content
         var playerID = getParameter("player_id");
 
         var renderInterval;
+        var stateInterval;
 
         function startGame() {
             $.post("/start-game", {"game_id": gameID}, function (data) {
@@ -27,6 +28,7 @@ block content
 
         function endGame() {
             endGameCycle();
+            endGameStateCycle();
             $.post("/end-game", {"game_id": gameID}, function(data) {
                 window.location = "/";
             }, "JSON");
@@ -62,6 +64,25 @@ block content
             renderInterval = null;
         }
 
+        function startGameStateCycle() {
+            stateInterval = setInterval(function() {
+                $.post("/check-game", {"game_id": gameID}, function(data) {
+                    if (!data.exists) {
+                        endGameCycle();
+                        endGameStateCycle();
+                        alert("The game has ended.");
+                        window.location = "/";
+                    }
+                }, "JSON");
+            }, 2500);
+        }
+
+        function endGameStateCycle() {
+            clearInterval(stateInterval);
+            stateInterval = null;
+        }
+
         $(document).ready(function () {
             startGameCycle();
+            startGameStateCycle();
         });
