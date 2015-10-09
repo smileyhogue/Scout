@@ -3,13 +3,15 @@
 
 extend layout
 block content
-    a(class='button btn-cust col-xs-6', href='/join') Join a Game
-    br
-    br
-    a(class='button btn-cust col-xs-6', href='/create') Create a Game
+    form(name="", method="post" class="row")
+        div.actions
+            div.col-xs-6
+                input(class="col-xs-12 btn-cust btn-lg" type="button" onclick="location.href='/join';" value="Join a Game")
+            div.col-xs-6
+                input(class="col-xs-12 btn-cust btn-lg" type="button" onclick="location.href='/create';" value="Create a game")
 block sidebar
     .widget
         h1 #{title}
         p
-            | #{title} is Spyfall is a party game, one in which you get to be a spy and try to understand what's going on around you. It's really simple!
+            | #{title} is a party game, one in which you get to be a spy and try to understand what's going on around you. It's really simple!
             | Spyfall is played over several rounds, and at the start of each round all players get to see a location, the same location for all players — a Movie Theatre, or a Stadium, — except that one player says "Spy" instead of the location. Players then start asking each other questions — "Why are you dressed so strangely?" or "When was the last time we got a payday?" — trying to guess who among them is the spy. The spy doesn't know where he is, so he has to listen carefully. When it's his time to answer, he'd better create a good story!

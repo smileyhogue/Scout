@@ -180,6 +180,13 @@ header {
     -webkit-font-smoothing: antialiased;
     text-color: white;
 }
+.btn-cust-green {
+    background-color: #388E3C !important;
+    background-repeat: repeat-x;
+    color: #fff !important;
+    -webkit-font-smoothing: antialiased;
+    text-color: white;
+}
 form{
     margin-left: 20%;
 }
@@ -215,6 +222,8 @@ footer {
 p.player-name {
     border-style: solid;
     border-width: medium;
-    border-color: red;
+    border-color: #4FC3F7;
     text-align: center;
+    font-size: 25px;
+    border-radius: 7px;
 }
