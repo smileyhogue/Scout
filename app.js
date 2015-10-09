@@ -44,8 +44,6 @@ app.post("/join-game", function (request, response) {
 	var parameters;
 	request.on("data", function (args) {
 		parameters = Parameters.fromString(args);
-	});
-	request.on("end", function () {
 		var gameID = parameters["gameID"];
 		DatabaseTool.createEntryID(players, {
 				"game_id": gameID,
@@ -67,9 +65,7 @@ app.post("/create-game", function (request, response) {
 	var parameters;
 	request.on("data", function (args) {
 		parameters = Parameters.fromString(args);
-	});
-	request.on("end", function () {
-		DatabaseTool.createEntryID(games, {active: false}, function (id) {
+		DatabaseTool.createEntryID(games, {active: false, first: -1}, function (id) {
 			DatabaseTool.createEntryID(players, {
 					"game_id": id,
 					"name": parameters["playerName"]
@@ -93,6 +89,7 @@ function loadPlayers(gameID, playerID, response, active) {
 			}
 			nameArray.push(name);
 		}
+		nameArray.sort();
 		if (playerID != -1) {
 			response.render("game", {
 				title: "Scout", page: "Game - " + gameID, game_id: gameID,
@@ -101,8 +98,7 @@ function loadPlayers(gameID, playerID, response, active) {
 			});
 		} else {
 			response.render("render-game", {
-				title: "Scout", page: "Game - " + gameID, game_id: gameID,
-				player_names: nameArray, active: active
+				game_id: gameID, player_names: nameArray, active: active
 			});
 		}
 	});
@@ -122,6 +118,29 @@ app.get("/render-game", function (request, response) {
 	});
 });
 
+app.get("/render-game-role", function (request, response) {
+	var gameID = request.query.game_id;
+	var playerID = request.query.player_id;
+	games.findOne({id: gameID}, function (err, doc) {
+		var location = doc["location"];
+		var first = doc["first"];
+		players.find({game_id: gameID}, function(err, doc) {
+			var nameArray = [];
+			for (var x in doc) {
+				nameArray.push(doc[x]["name"]);
+			}
+			nameArray.sort();
+			var firstName = nameArray[first];
+			players.findOne({id: playerID}, function (err, doc) {
+				var role = doc["role"];
+				response.render("render-game-role", {
+					location: location, role: role, first: first, firstName: firstName
+				});
+			});
+		});
+	});
+});
+
 app.post("/start-game", function (request, response) {
 	var parameters;
 	request.on("data", function (args) {
@@ -130,13 +149,16 @@ app.post("/start-game", function (request, response) {
 		games.findOne({id: gameID}, function (err, doc) {
 			var active = (doc !== null && doc["active"]);
 			if (!active) {
-				games.update({id: gameID}, {$set: {active: true}}, {}, function () {
-					Games.randomize(games, locations, gameID,
-						function (location, roles) {
-							Players.selectRoles(players, gameID, roles,
-								function (id, roles) {
-									response.write(JSON.stringify({"success": true}));
-									response.end();
+				players.find({game_id: gameID}, function (err, doc) {
+					var first = Math.floor(Math.random() * doc.length);
+					games.update({id: gameID}, {$set: {active: true, first: first}}, {},
+						function () {
+							Games.randomize(games, locations, gameID,
+								function (gameID, location, roles) {
+									Players.selectRoles(players, gameID, roles, function () {
+										response.write(JSON.stringify({"success": true}));
+										response.end();
+									});
 								});
 						});
 				});

@@ -3,7 +3,8 @@
 
 extend full-layout
 block header-info
-    h4 #{player_name}
+    h4 Welcome, #{player_name}
+    div(id="data")
 block content
     div(id="game")
     | <script>
@@ -16,10 +17,11 @@ block content
         var gameID = getParameter("game_id");
         var playerID = getParameter("player_id");
 
+        var renderInterval;
+
         function startGame() {
-            $.post("/start-game", {"game_id": gameID}, function(data) {
+            $.post("/start-game", {"game_id": gameID}, function (data) {
                 renderGame();
-                endGameCycle();
             }, "JSON");
         }
 
@@ -29,19 +31,32 @@ block content
 
         function restartGame() {
             alert("Restart game");
+            $("p.player-name").css("border-color", "#4FC3F7");
         }
 
         function renderGame() {
             $("#game").load("/render-game?game_id=" + gameID);
+            $("#data").load("/render-game-role?game_id=" + gameID +
+                    "&player_id=" + playerID, function () {
+                var firstElement = $("*[name='firstPlayerIndex']");
+                if (firstElement.length) {
+                    endGameCycle();
+                    var firstIndex = parseInt(firstElement.attr("id"));
+                    var players = $("p.player-name");
+                    var player = players.eq(firstIndex);
+                    player.css("border-color", "#388E3C");
+                }
+            });
         }
 
         function startGameCycle() {
             renderGame();
-            setInterval(renderGame, 5000);
+            renderInterval = setInterval(renderGame, 1000);
         }
 
         function endGameCycle() {
-            clearInterval(renderGame);
+            clearInterval(renderInterval);
+            renderInterval = null;
         }
 
         $(document).ready(function () {
