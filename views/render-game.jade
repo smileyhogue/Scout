@@ -3,11 +3,21 @@
 
 each player_name in player_names
     p.player-name #{player_name}
-if !active
-    form(name="Join game", method="post" class="row")
+if active !== false
+    form(name="Game Form", method="post", class="row")
         div.actions
             div.col-xs-6
-                input(class="col-xs-12 btn-cust-green btn-lg" type="submit", value="Start")
+                input(class="col-xs-12 btn-cust-green btn-lg",
+                type="button", value="Play again", onclick="restartGame();")
             div.col-xs-6
-                input(class="col-xs-12 btn-cust btn-lg" type="button"
-                onclick="location.href='/';" value="Exit")
+                input(class="col-xs-12 btn-cust btn-lg",
+                type="button", value="End", onclick="endGame();")
+else
+    form(name="Game Form", method="post", class="row")
+        div.actions
+            div.col-xs-6
+                input(class="col-xs-12 btn-cust-green btn-lg",
+                type="button", value="Start", onclick="startGame();")
+            div.col-xs-6
+                input(class="col-xs-12 btn-cust btn-lg",
+                type="button", value="End", onclick="endGame();")

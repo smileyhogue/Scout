@@ -116,8 +116,8 @@ app.get("/game", function (request, response) {
 
 app.get("/render-game", function (request, response) {
 	var gameID = request.query.game_id;
-	games.findOne({id: gameID}, function(err, doc) {
-		var active = doc["active"];
+	games.findOne({id: gameID}, function (err, doc) {
+		var active = (doc !== null && doc["active"]);
 		loadPlayers(gameID, -1, response, active);
 	});
 });
@@ -126,16 +126,21 @@ app.post("/start-game", function (request, response) {
 	var parameters;
 	request.on("data", function (args) {
 		parameters = Parameters.fromString(args);
-	});
-	request.on("end", function () {
 		var gameID = parameters["game_id"];
-		games.update({id: gameID}, {active: true}, {}, function() {
-			games.persistence.compactDatafile();
-			Games.randomize(games, locations, gameID, function(location, roles) {
-				Players.selectRoles(players, gameID, roles, function(id, roles) {
-
+		games.findOne({id: gameID}, function (err, doc) {
+			var active = (doc !== null && doc["active"]);
+			if (!active) {
+				games.update({id: gameID}, {$set: {active: true}}, {}, function () {
+					Games.randomize(games, locations, gameID,
+						function (location, roles) {
+							Players.selectRoles(players, gameID, roles,
+								function (id, roles) {
+									response.write(JSON.stringify({"success": true}));
+									response.end();
+								});
+						});
 				});
-			});
+			}
 		});
 	});
 });

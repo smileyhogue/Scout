@@ -35,10 +35,16 @@ module.exports = {
 	selectRoles: function (db, gameID, roles, callback) {
 		db.find({game_id: gameID}, function (err, doc) {
 			var assigned = [];
-			for (var x in doc) {
-				var role = Random.selectArrayElementExcept(roles, assigned);
-				assigned.push(role);
-				var playerId = doc[x]["id"];
+			var scoutIndex = roles[Math.floor(Math.random() * roles.length)];
+			for (var i = 0; i < roles.length; i++) {
+				var role;
+				if (i == scoutIndex) {
+					role = "Scout";
+				} else {
+					role = Random.selectArrayElementExcept(roles, assigned);
+					assigned.push(role);
+				}
+				var playerId = doc[i]["id"];
 				module.exports.updateRole(db, playerId, role, callback);
 			}
 		});

@@ -3,12 +3,14 @@
 
 extend layout
 block content
-    form(name="", method="post" class="row")
+    form(name="", method="post", class="row")
         div.actions
             div.col-xs-6
-                input(class="col-xs-12 btn-cust btn-lg" type="button" onclick="location.href='/join';" value="Join a Game")
+                input(class="col-xs-12 btn-cust btn-lg", type="button",
+                onclick="location.href='/join';", value="Join a Game")
             div.col-xs-6
-                input(class="col-xs-12 btn-cust btn-lg" type="button" onclick="location.href='/create';" value="Create a game")
+                input(class="col-xs-12 btn-cust btn-lg", type="button",
+                onclick="location.href='/create';", value="Create a game")
 block sidebar
     .widget
         h1 #{title}

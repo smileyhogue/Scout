@@ -16,11 +16,33 @@ block content
         var gameID = getParameter("game_id");
         var playerID = getParameter("player_id");
 
+        function startGame() {
+            $.post("/start-game", {"game_id": gameID}, function(data) {
+                renderGame();
+            }, "JSON");
+        }
+
+        function endGame() {
+            alert("End game");
+        }
+
+        function restartGame() {
+            alert("Restart game");
+        }
+
         function renderGame() {
-            $("#game").load("/render-game?game_id=" + gameID)
+            $("#game").load("/render-game?game_id=" + gameID);
+        }
+
+        function startGameCycle() {
+            renderGame();
+            setInterval(renderGame, 5000);
+        }
+
+        function endGameCycle() {
+            clearInterval(renderGame);
         }
 
         $(document).ready(function () {
-            renderGame();
-            setInterval(renderGame, 5000);
+            startGameCycle();
         });
