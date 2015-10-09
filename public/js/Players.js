@@ -35,7 +35,7 @@ module.exports = {
 	selectRoles: function (db, gameID, roles, callback) {
 		db.find({game_id: gameID}, function (err, doc) {
 			var assigned = [];
-			var scoutIndex = roles[Math.floor(Math.random() * roles.length)];
+			var scoutIndex = Math.floor(Math.random() * doc.length);
 			for (var i = 0; i < roles.length; i++) {
 				var role;
 				if (i == scoutIndex) {

@@ -19,6 +19,7 @@ block content
         function startGame() {
             $.post("/start-game", {"game_id": gameID}, function(data) {
                 renderGame();
+                endGameCycle();
             }, "JSON");
         }
 
