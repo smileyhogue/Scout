@@ -5,6 +5,8 @@
 
 var Random = require("./Random.js");
 
+var _ = require("lodash");
+
 module.exports = {
 
 	/**
@@ -22,7 +24,7 @@ module.exports = {
 			} else {
 				var inserted = {id: id};
 				if (fields) {
-					Object.assign(inserted, fields);
+					inserted = _.assign(inserted, fields);
 				}
 				db.insert(inserted, function () {
 					if (callback) {

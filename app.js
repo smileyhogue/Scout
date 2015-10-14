@@ -5,10 +5,10 @@
 
 var fs = require("fs");
 var Datastore = require("nedb");
-var Parameters = require("./js/Parameters.js");
-var DatabaseTool = require("./js/DatabaseTool.js");
-var Games = require("./js/Games.js");
-var Players = require("./js/Players.js");
+var Parameters = require("./public/js/Parameters.js");
+var DatabaseTool = require("./public/js/DatabaseTool.js");
+var Games = require("./public/js/Games.js");
+var Players = require("./public/js/Players.js");
 
 var json = JSON.parse(fs.readFileSync("./res/locations.json", "UTF8"));
 var locations = json["locations"];
@@ -41,11 +41,8 @@ app.get("/join", function (request, response) {
 });
 
 app.post("/join-game", function (request, response) {
-	var parameters;
 	request.on("data", function (args) {
-		parameters = Parameters.fromString(args);
-	});
-	request.on("end", function () {
+		var parameters = Parameters.fromString(args);
 		var gameID = parameters["gameID"];
 		DatabaseTool.createEntryID(players, {
 				"game_id": gameID,
@@ -64,12 +61,9 @@ app.get("/create", function (request, response) {
 });
 
 app.post("/create-game", function (request, response) {
-	DatabaseTool.createEntryID(games, {}, function (id) {
-		var parameters;
-		request.on("data", function (args) {
-			parameters = Parameters.fromString(args);
-		});
-		request.on("end", function () {
+	request.on("data", function (args) {
+		var parameters = Parameters.fromString(args);
+		DatabaseTool.createEntryID(games, {active: false, first: -1}, function (id) {
 			DatabaseTool.createEntryID(players, {
 					"game_id": id,
 					"name": parameters["playerName"]
@@ -81,9 +75,7 @@ app.post("/create-game", function (request, response) {
 	});
 });
 
-app.get("/game", function (request, response) {
-	var gameID = request.query.game_id;
-	var playerID = request.query.player_id;
+function loadPlayers(gameID, playerID, response, active) {
 	players.find({game_id: gameID}, function (err, doc) {
 		var playerName;
 		var nameArray = [];
@@ -95,9 +87,132 @@ app.get("/game", function (request, response) {
 			}
 			nameArray.push(name);
 		}
-		response.render("game", {
-			title: "Scout", page: "Game - " + gameID, game_id: gameID,
-			player_id: playerID, player_name: playerName, player_names: nameArray
+		nameArray.sort();
+		if (playerID != -1) {
+			response.render("game", {
+				title: "Scout", page: "Game - " + gameID, game_id: gameID,
+				player_id: playerID, player_name: playerName, player_names: nameArray,
+				active: false
+			});
+		} else {
+			response.render("render-game", {
+				game_id: gameID, player_names: nameArray, active: active
+			});
+		}
+	});
+}
+
+app.get("/game", function (request, response) {
+	var gameID = request.query.game_id;
+	var playerID = request.query.player_id;
+	loadPlayers(gameID, playerID, response, false);
+});
+
+app.get("/render-game", function (request, response) {
+	var gameID = request.query.game_id;
+	games.findOne({id: gameID}, function (err, doc) {
+		var active = (doc !== null && doc["active"]);
+		loadPlayers(gameID, -1, response, active);
+	});
+});
+
+app.get("/render-game-role", function (request, response) {
+	var gameID = request.query.game_id;
+	var playerID = request.query.player_id;
+	games.findOne({id: gameID}, function (err, doc) {
+		if (doc !== null) {
+			var location = doc["location"];
+			var first = doc["first"];
+			players.find({game_id: gameID}, function (err, doc) {
+				var nameArray = [];
+				for (var x in doc) {
+					nameArray.push(doc[x]["name"]);
+				}
+				nameArray.sort();
+				var firstName = nameArray[first];
+				players.findOne({id: playerID}, function (err, doc) {
+					var role = doc["role"];
+					response.render("render-game-role", {
+						location: location, role: role, first: first, firstName: firstName
+					});
+				});
+			});
+		}
+	});
+});
+
+app.post("/start-game", function (request, response) {
+	request.on("data", function (args) {
+		var parameters = Parameters.fromString(args);
+		var gameID = parameters["game_id"];
+		games.findOne({id: gameID}, function (err, doc) {
+			var active = (doc !== null && doc["active"]);
+			if (!active) {
+				players.find({game_id: gameID}, function (err, doc) {
+					var first = Math.floor(Math.random() * doc.length);
+					games.update({id: gameID}, {$set: {active: true, first: first}}, {},
+						function () {
+							Games.randomize(games, locations, gameID,
+								function (gameID, location, roles) {
+									Players.selectRoles(players, gameID, roles, function () {
+										response.write(JSON.stringify({"success": true}));
+										response.end();
+									});
+								});
+						});
+				});
+			}
+		});
+	});
+});
+
+app.post("/end-game", function (request, response) {
+	request.on("data", function (args) {
+		var parameters = Parameters.fromString(args);
+		var gameID = parameters["game_id"];
+		Games.purge(games, players, gameID, function () {
+			response.write(JSON.stringify({"success": true}));
+			response.end();
+		});
+	});
+});
+
+app.post("/check-game", function (request, response) {
+	request.on("data", function (args) {
+		var parameters = Parameters.fromString(args);
+		var gameID = parameters["game_id"];
+		games.findOne({id: gameID}, function (err, doc) {
+			var exists = (doc !== null);
+			var active = (doc !== null && doc["active"]);
+			response.write(JSON.stringify({"exists": exists, "active": active}));
+			response.end();
+		});
+	});
+});
+
+app.post("/restart-game", function (request, response) {
+	request.on("data", function (args) {
+		var parameters = Parameters.fromString(args);
+		var gameID = parameters["game_id"];
+		games.update({id: gameID}, {id: gameID, active: false}, {}, function (err, doc) {
+			games.persistence.compactDatafile();
+			players.find({game_id: gameID}, function (err, doc) {
+				var total = doc.length;
+				var completed = 0;
+				for (var x in doc) {
+					var player = doc[x];
+					var id = player["id"];
+					var name = player["name"];
+					players.update({id: id}, {id: id, game_id: gameID, name: name}, {},
+						function (err, doc) {
+							completed++;
+							if (completed >= total) {
+								response.write(JSON.stringify({"success": true}));
+								response.end();
+							}
+						});
+				}
+			});
 		});
 	});
 });

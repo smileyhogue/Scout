@@ -3,13 +3,98 @@
 
 extend full-layout
 block header-info
-    h4 #{player_name}
+    h4 Welcome, #{player_name}
+    div(id="data")
 block content
-    each player_name in player_names
-        p.player-name #{player_name}
-    form(name="Join game", method="post" class="row")
-        div.actions
-            div.col-xs-6
-                input(class="col-xs-12 btn-cust-green btn-lg" type="submit", value="Start")
-            div.col-xs-6
-                input(class="col-xs-12 btn-cust btn-lg" type="button" onclick="location.href='/';" value="Exit")
+    div(id="game")
+    | <script>
+    include ../public/js/Internet.js
+    | </script>
+    | <script>
+    include ../public/js/jQuery.js
+    | </script>
+    script(type="text/javascript").
+        var gameID = getParameter("game_id");
+        var playerID = getParameter("player_id");
+
+        var renderInterval;
+        var stateInterval;
+
+        function startGame() {
+            $.post("/start-game", {"game_id": gameID}, function (data) {
+                renderGame();
+            }, "JSON");
+        }
+
+        function endGame() {
+            endGameCycle();
+            endGameStateCycle();
+            $.post("/end-game", {"game_id": gameID}, function(data) {
+                window.location = "/";
+            }, "JSON");
+        }
+
+        function restartGame() {
+            $.post("/restart-game", {"game_id": gameID}, function(data) {
+                endGameCycle();
+                endGameStateCycle();
+                window.location.reload();
+            }, "JSON");
+        }
+
+        function renderGame() {
+            $("#game").load("/render-game?game_id=" + gameID);
+            $("#data").load("/render-game-role?game_id=" + gameID +
+                    "&player_id=" + playerID, function () {
+                var firstElement = $("*[name='firstPlayerIndex']");
+                if (firstElement.length) {
+                    endGameCycle();
+                    var firstIndex = parseInt(firstElement.attr("id"));
+                    var players = $("p.player-name");
+                    var player = players.eq(firstIndex);
+                    player.css("border-color", "#388E3C");
+                }
+            });
+        }
+
+        function startGameCycle() {
+            renderGame();
+            renderInterval = setInterval(renderGame, 1000);
+        }
+
+        function endGameCycle() {
+            clearInterval(renderInterval);
+            renderInterval = null;
+        }
+
+        function startGameStateCycle() {
+            stateInterval = setInterval(function() {
+                $.post("/check-game", {"game_id": gameID}, function(data) {
+                    if (!data.exists) {
+                        endGameCycle();
+                        endGameStateCycle();
+                        alert("The game has ended.");
+                        window.location = "/";
+                    } else {
+                        if (!data.active) {
+                            var firstElement = $("*[name='firstPlayerIndex']");
+                            if (firstElement.length) {
+                                endGameCycle();
+                                endGameStateCycle();
+                                window.location.reload();
+                            }
+                        }
+                    }
+                }, "JSON");
+            }, 1000);
+        }
+
+        function endGameStateCycle() {
+            clearInterval(stateInterval);
+            stateInterval = null;
+        }
+
+        $(document).ready(function () {
+            startGameCycle();
+            startGameStateCycle();
+        });

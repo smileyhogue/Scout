@@ -16,11 +16,8 @@ module.exports = {
 	 * @param callback a callback upon updating the player's role
 	 */
 	updateRole: function (db, playerID, role, callback) {
-		db.update({id: playerID}, {$set: {role: role}}, {}, function () {
-			db.persistence.compactDatafile();
-			if (callback) {
-				callback(playerID, role);
-			}
+		db.update({id: playerID}, {$set: {role: role}}, {}, function() {
+			callback();
 		});
 	},
 
@@ -35,11 +32,25 @@ module.exports = {
 	selectRoles: function (db, gameID, roles, callback) {
 		db.find({game_id: gameID}, function (err, doc) {
 			var assigned = [];
-			for (var x in doc) {
-				var role = Random.selectArrayElementExcept(roles, assigned);
-				assigned.push(role);
-				var playerId = doc[x]["id"];
-				module.exports.updateRole(db, playerId, role, callback);
+			var total = doc.length;
+			var scoutIndex = Math.floor(Math.random() * total);
+			var completed = 0;
+			for (var i = 0; i < doc.length; i++) {
+				var role;
+				if (i == scoutIndex) {
+					role = "Scout";
+				} else {
+					role = Random.selectArrayElementExcept(roles, assigned);
+					assigned.push(role);
+				}
+				var playerId = doc[i]["id"];
+				module.exports.updateRole(db, playerId, role, function() {
+					completed++;
+					if (completed >= total) {
+						db.persistence.compactDatafile();
+						callback();
+					}
+				});
 			}
 		});
 	}
